@@ -3,7 +3,7 @@
 go_to_project() {
   selected_dir=$(
     fd -a -t d -d 1 --color=never . $HOME/Documents/projects | \
-    fzf --tmux 95% +s -i +m --no-mouse --scheme=path \
+    fzf +s -i +m --no-mouse --scheme=path \
       --border=rounded --border-label-pos=4:bottom --border-label=" Got To Project " \
       --color=dark \
       --preview='bat --color=always -r :55 -l md {}README.md 2>/dev/null || echo "No README Found"' \

@@ -20,7 +20,7 @@ git_checkout() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
   selected_branch=$(git branch | \
     rg -v "^\* $current_branch" | \
-    fzf --tmux 80% -i +m --no-mouse \
+    fzf -i +m --no-mouse \
       --border=rounded --border-label-pos=4:bottom --border-label=" Current: $current_branch " \
       --color=dark | \
     tr -d '[:space:]'
@@ -36,6 +36,35 @@ git_checkout() {
   return 0
 }
 alias ggch='git_checkout'
+
+
+git_checkout_commit() {
+  echo "\nGIT CHECKOUT COMMIT\n\n"
+  git diff-index --cached --quiet HEAD --
+  local staged=$?
+  if [ $staged -eq 1 ]; then
+    echo "\nHAS STAGED: ${staged}\n\n"
+    return 0
+  fi
+
+  git diff-index --quiet HEAD --
+  local unstaged=$?
+  if [ $unstaged -eq 1 ]; then
+    echo "\nHAS UNSTAGED: ${unstaged}\n\n"
+    return 0
+  fi
+
+  selected_ref=$(git --no-pager log --pretty=format:"%h %an %s %ad" -n 30 | \
+    fzf -i +m --no-mouse \
+      --border=rounded --border-label-pos=4:bottom --border-label=" Reset Soft To... " \
+      --preview='echo {} | cut -d" " -f1 | xargs git --no-pager show --color=always -s' \
+      --color=dark | \
+    cut -d " " -f1
+  )
+
+  git checkout $selected_ref
+}
+alias ggcc='git_checkout_commit'
 
 git_reset_hard() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -94,8 +123,9 @@ git_reset_soft_to_ref() {
   fi
 
   selected_ref=$(git --no-pager log --pretty=format:"%h %an %s %ad" -n 30 | \
-    fzf --tmux 80% -i +m --no-mouse \
+    fzf -i +m --no-mouse \
       --border=rounded --border-label-pos=4:bottom --border-label=" Reset Soft To... " \
+      --preview='echo {} | cut -d" " -f1 | xargs git --no-pager show --color=always -s' \
       --color=dark | \
     cut -d " " -f1
   )
