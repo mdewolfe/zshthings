@@ -64,6 +64,11 @@ git_checkout_commit() {
     cut -d " " -f1
   )
 
+  if [ -z $selected_ref ]; then
+    echo "No ref selected"
+    return 0
+  fi
+
   git checkout $selected_ref
 }
 alias ggcc='git_checkout_commit'
@@ -133,6 +138,7 @@ git_reset_soft_to_ref() {
     cut -d " " -f1
   )
   if [ -z "$selected_ref" ]; then
+    echo "No ref selected" >&2
     return 0
   fi
 
