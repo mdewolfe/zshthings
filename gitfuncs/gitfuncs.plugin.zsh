@@ -41,7 +41,6 @@ alias ggch='git_checkout'
 
 
 git_checkout_commit() {
-  echo "\nGIT CHECKOUT COMMIT\n\n"
   git diff-index --cached --quiet HEAD --
   local staged=$?
   if [ $staged -eq 1 ]; then
@@ -52,7 +51,7 @@ git_checkout_commit() {
   git diff-index --quiet HEAD --
   local unstaged=$?
   if [ $unstaged -eq 1 ]; then
-    echo "\nHAS UNSTAGED: ${unstaged}\n\n"
+    echo "\nHAS UNSTAGED: ${unstaged}\n\n" >&2
     return 0
   fi
 
@@ -65,7 +64,7 @@ git_checkout_commit() {
   )
 
   if [ -z $selected_ref ]; then
-    echo "No ref selected"
+    echo "No ref selected" >&2
     return 0
   fi
 
