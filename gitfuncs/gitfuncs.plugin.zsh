@@ -58,7 +58,7 @@ git_checkout_commit() {
 
   selected_ref=$(git --no-pager log --pretty=format:"%h %an %s %ad" -n 30 | \
     fzf -i +m --no-mouse \
-      --border=rounded --border-label-pos=4:bottom --border-label=" Reset Soft To... " \
+      --border=rounded --border-label-pos=4:bottom --border-label=" Checkout commit... " \
       --preview='echo {} | cut -d" " -f1 | xargs git --no-pager show --color=always -s' \
       --color=dark | \
     cut -d " " -f1
