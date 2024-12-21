@@ -77,7 +77,7 @@ git_reset_hard() {
 alias ggrsh='git_reset_hard'
 
 git_rebase_default_branch() {
-  read -r default_branch < default_branch.txt
+  local default_branch=$(<.default_branch)
   git fetch origin $default_branch && \
     git rebase origin/$default_branch && \
     echo "\n\n" && \
@@ -88,7 +88,8 @@ git_rebase_default_branch() {
 alias ggrbd='git_rebase_default_branch'
 
 git_reset_hard_default_branch() {
-  read -r default_branch<default_branch.txt && \
+  # TODO: add confirmation
+  local default_branch=$(<.default_branch)
     git fetch origin $default_branch && \
     git reset --hard origin/$default_branch && \
     echo "\n\n" && \
@@ -99,7 +100,7 @@ git_reset_hard_default_branch() {
 alias ggrshd='git_reset_hard_default_branch'
 
 git_checkout_default_branch() {
-  read -r default_branch<default_branch.txt
+  local default_branch=$(<.default_branch)
   git checkout $default_branch
   logit
   return 0
@@ -107,7 +108,7 @@ git_checkout_default_branch() {
 alias ggcd="git_checkout_default_branch"
 
 git_pull_default_branch() {
-  read -r default_branch<default_branch.txt
+  local default_branch=$(<.default_branch)
   git pull origin $default_branch
   return 0
 }
@@ -166,14 +167,43 @@ git_push_origin() {
 }
 alias ggpo='git_push_origin'
 
-git_push_origin_hard() {
-  current_branch=$(git rev-parse --abbrev-ref HEAD)
+git_push_current_branch() {
+  local current_branch
 
   ORANGE=$'\033[38;5;208m'
   YELLOW=$'\033[0;33m'
   NC=$'\033[0m' # No Color
+  if ! current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
+    echo "\n${YELLOW}Not a Git repo${NC}\n\n"
+    return 0
+  fi
 
-  echo "\n\n\n"
+  if [[ $current_branch == "HEAD" ]]; then
+    echo "\n${YELLOW}In a detached HEAD state.${NC}\n\n"
+    return 0
+  fi
+
+  git push origin $current_branch
+}
+alias ggpb='git_push_current_branch'
+
+git_push_origin_hard() {
+  local current_branch
+
+  ORANGE=$'\033[38;5;208m'
+  YELLOW=$'\033[0;33m'
+  NC=$'\033[0m' # No Color
+  if ! current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); then
+    echo "\n${YELLOW}Not a Git repo${NC}\n\n"
+    return 0
+  fi
+
+  if [[ $current_branch == "HEAD" ]]; then
+    echo "\n${YELLOW}In a detached HEAD state.${NC}\n\n"
+    return 0
+  fi
+
+  echo "\n\n"
   read -qs "choice?${YELLOW}CONFIRM${NC} git push -f ${ORANGE}origin $current_branch${NC}? (y/n) "
   echo
 
