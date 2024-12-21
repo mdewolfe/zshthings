@@ -20,13 +20,15 @@ git_checkout() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
   selected_branch=$(git branch | \
     rg -v "^\* $current_branch" | \
+    sed 's/^[[:space:]]*//' | \
     fzf -i +m --no-mouse \
       --border=rounded --border-label-pos=4:bottom --border-label=" Current: $current_branch " \
+      --preview='git --no-pager log {} -n 5' \
       --color=dark | \
     tr -d '[:space:]'
   )
   if [ -z "$selected_branch" ]; then
-    return 1
+    return 0
   fi
 
   echo "\n"
