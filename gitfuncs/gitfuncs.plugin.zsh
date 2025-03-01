@@ -39,6 +39,49 @@ git_checkout() {
 }
 alias ggch='git_checkout'
 
+git_checkout_tag() {
+  isgitrepo=$(git rev-parse --is-inside-work-tree)
+  if [ -z $isgitrepo ]; then
+    RED='\033[0;31m'
+    NC='\033[0m' # No Color
+    >&2 echo -e "\n${RED}No branch to checkout!${NC}\n"
+    return 0
+  fi
+
+  git diff-index --cached --quiet HEAD --
+  local staged=$?
+  if [ $staged -eq 1 ]; then
+    echo "\n\033[0;31mHAS STAGED STAGED CHANGES\033[0m\n\n" >&2
+    return 1
+  fi
+
+  git diff-index --quiet HEAD --
+  local unstaged=$?
+  if [ $unstaged -eq 1 ]; then
+    echo "\n\033[0;31mHAS UNSTAGED CHANGES!!\033[0m\n\n" >&2
+    return 1
+  fi
+
+  local current_branch=$(git rev-parse --abbrev-ref HEAD)
+  local selected_tag=$(git tag | \
+    sed 's/^[[:space:]]*//' | \
+    fzf -i +m --no-mouse \
+      --border=rounded --border-label-pos=4:bottom --border-label=" Current: $current_branch " \
+      --preview='git --no-pager log {} -n 5' \
+      --color=dark | \
+    tr -d '[:space:]'
+  )
+  if [ -z "$selected_tag" ]; then
+    return 0
+  fi
+
+  echo "\n"
+  git checkout $selected_tag
+  logit
+
+  return 0
+}
+alias ggcot='git_checkout_tag'
 
 git_checkout_commit() {
   git diff-index --cached --quiet HEAD --

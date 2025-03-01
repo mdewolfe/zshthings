@@ -25,8 +25,7 @@ alias gtp='go_to_project'
 
 
 go_to_project_root() {
-  local git_root
-  git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  local git_root=$(git rev-parse --show-toplevel 2>/dev/null)
   if [[ -n $git_root ]]; then
     cd "$git_root" || return
   else
@@ -34,52 +33,3 @@ go_to_project_root() {
   fi
 }
 alias gtpr='go_to_project_root'
-
-
-checkfile() {
-  local es filepath
-  while getopts "s:f:"  opt; do
-    case $opt in
-      s)
-        es=$OPTARG
-        ;;
-      f)
-        filepath=$OPTARG
-        ;;
-      *)
-        echo "\nInvalid Option!\n\n"
-        return 1
-        ;;
-    esac
-  done
-
-  shift $((OPTIND - 1))
-
-  if [[ -z $es ]]; then
-    echo "Error: expected shamsum required (-s)" >&2
-    return 1
-  fi
-
-  if [[ -z $filepath ]]; then
-    echo "Error: filepath must be provided (-f)" >&2
-    return 1
-  fi
-
-  if [[ ! -e $filepath || ! -r $filepath ]]; then
-    echo "Can not read file at path" >&2
-    return 1
-  fi
-
-  local cs=$(shasum -a 256 ${filepath} | cut -d ' ' -f1)
-  echo "Calculated: ${cs}"
-  echo "Expected:   ${es}"
-
-  if [[ $es == $cs ]]; then
-    echo "SHASUMs (256) Match"
-    return 0
-  fi
-
-  echo "Calculated SHA256 does not match expected" >&2
-
-  return 1
-}
